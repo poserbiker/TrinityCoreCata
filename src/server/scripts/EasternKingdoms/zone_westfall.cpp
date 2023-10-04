@@ -30,6 +30,7 @@
 #include "TemporarySummon.h"
 #include "ObjectMgr.h"
 #include "Group.h"
+#include "Player.cpp"
 
 enum WestfallQuest
 {
@@ -1277,6 +1278,218 @@ private:
     ObjectGuid _eventInvokerGUID;
 };
 
+// #############################################  quest = 26228  Livin' the Life
+
+enum eQuest26228
+{
+    NPC_GLUBTOK_THE_FOREMAN = 42492,
+    NPC_SHADOWY_FIGURE = 42515,
+//    NPC_TWO_SHOED_LOUS_OLD_HOUSE = 42500,
+	NPC_LUES_OLD_HOUSE=42500,
+    QUEST_LIVIN_THE_LIFE = 26228,
+    SPELL_SHROUD_OF_SHADOWS = 79192, // used by old script
+    SPELL_VANISH_VISUAL = 24222, // used by old script
+    SPELL_SUMMON_GLUBTOK = 79263,
+    SPELL_SUMMON_SHADOWY_FIGURE = 79265,
+    SPELL_SUMMON_LOUS_HOUSE = 79262,
+};
+
+/* class npc_lues_old_house : public CreatureScript
+{
+public:
+    npc_lues_old_house() : CreatureScript("npc_lues_old_house") { }
+
+    struct npc_lues_old_houseAI : public ScriptedAI
+    {
+        npc_lues_old_houseAI(Creature *c) : ScriptedAI(c) { }
+
+        uint32 _timer;
+        uint32 _phase;
+
+        void Reset() override
+        {
+            _timer = 0;
+            _phase = 0;
+        }
+
+        void IsSummonedBy(Unit* summoner) override
+        {
+            if (Player* player = summoner->ToPlayer())
+            {
+                player->CastSpell(player, SPELL_SUMMON_GLUBTOK);
+                player->CastSpell(player, SPELL_SUMMON_SHADOWY_FIGURE);
+				player->CastSpell(player, SPELL_SUMMON_LOUS_HOUSE);
+                _phase = 1; _timer = 1000;
+            }
+        }
+
+        void UpdateAI(uint32 diff) override
+        {
+            if (_timer <= diff)
+            {
+                _timer = 1000;
+                DoWork();
+            }
+            else
+                _timer -= diff;
+
+            if (!UpdateVictim())
+                return;
+
+            DoMeleeAttackIfReady();
+        }
+
+        void DoWork()
+        {
+            if (_phase == 1)
+            {
+                if (Creature* grubtok = me->FindNearestCreature(NPC_GLUBTOK_THE_FOREMAN, 40.0f))
+                    return;
+                else
+                    me->DespawnOrUnsummon();
+            }
+        }
+    };
+
+    CreatureAI* GetAI(Creature* creature) const
+    {
+        return new npc_lues_old_houseAI(creature);
+    }
+};
+*/
+class npc_shadowy_figure : public CreatureScript
+{
+public:
+    npc_shadowy_figure() : CreatureScript("npc_shadowy_figure") { }
+
+    struct npc_shadowy_figureAI : public ScriptedAI
+    {
+        npc_shadowy_figureAI(Creature *c) : ScriptedAI(c) { }
+
+        uint32		_timer;
+        uint32		_phase;
+        Player*		_player;
+
+        void Reset() override
+        {
+            _timer = 0;
+            _phase = 0;
+            _player = nullptr;
+        }
+
+        void IsSummonedBy(Unit* summoner) override
+        {
+            if (Player* player = summoner->ToPlayer())
+            {
+                _player = player;
+                _timer = 1000;
+                _phase = 1;
+            }
+        }
+
+        void UpdateAI(uint32 diff) override
+        {
+            if (_timer <= diff)
+            {
+                _timer = 1000;
+                DoWork();
+            }
+            else
+                _timer -= diff;
+
+            if (!UpdateVictim())
+                return;
+
+            DoMeleeAttackIfReady();
+        }
+
+        void DoWork()
+        {
+            Creature* _glubtok = me->FindNearestCreature(NPC_GLUBTOK_THE_FOREMAN, 40.0f, true);
+
+            if (!_glubtok)
+                return;
+
+            switch (_phase)
+            {
+            case 1:
+                _phase++; _timer = 7000;
+                me->SetWalk(true);
+                me->GetMotionMaster()->MovePoint(0, -9841.677f, 1400.042f, 37.129f);
+                break;
+            case 2:
+                _phase++; _timer = 5000;
+                _glubtok->AI()->Talk(0);
+                break;
+            case 3:
+                _phase++; _timer = 8500;
+                me->AI()->Talk(0);
+                break;
+            case 4:
+                _phase++; _timer = 4000;
+                _glubtok->AI()->Talk(1);
+                break;
+            case 5:
+                _phase++; _timer = 6500;
+                me->AI()->Talk(1);
+                break;
+            case 6:
+                _phase++; _timer = 6500;
+                me->AI()->Talk(2);
+                break;
+            case 7:
+                _phase++; _timer = 4000;
+                _glubtok->AI()->Talk(2);
+                break;
+            case 8:
+                _phase++; _timer = 7000;
+                me->AI()->Talk(3);
+                break;
+            case 9:
+                _phase++; _timer = 7000;
+                _glubtok->AI()->Talk(3);
+                break;
+            case 10:
+                _phase++; _timer = 6000;
+                _glubtok->AI()->Talk(4);
+                break;
+            case 11:
+                _phase++; _timer = 6000;
+                me->AI()->Talk(4);
+                break;
+            case 12:
+                _phase++; _timer = 6000;
+                me->AI()->Talk(5);
+                break;
+            case 13:
+                _phase++; _timer = 2000;
+                if (_player && _player->IsAlive())
+                {
+                    _player->KilledMonsterCredit(NPC_GLUBTOK_THE_FOREMAN);
+                    _player->CompleteQuest(QUEST_LIVIN_THE_LIFE);
+					_player->ExitVehicle();
+                }
+                me->DespawnOrUnsummon(1000);
+                _glubtok->DespawnOrUnsummon(1000);
+                break;
+/*            case 14:
+                _phase = 0; _timer = 0;
+                if (_player && _player->IsAlive())
+                {
+                    _player->ExitVehicle();
+                }
+                break;
+*/
+            }
+        }
+    };
+
+    CreatureAI* GetAI(Creature* creature) const
+    {
+        return new npc_shadowy_figureAI(creature);
+    }
+};
+
 enum WestFallStewNpc
 {
     NPC_WESTFALL_STEW = 42617
@@ -1600,8 +1813,16 @@ class spell_westfall_sniper_fire : public SpellScript
     }
 };
 
+
+
+
+
+
 void AddSC_westfall()
 {
+/*	new npc_lues_old_house(); */
+    new npc_shadowy_figure();
+	//new npc_shadowy_trigger();
     RegisterSpellScript(spell_westfall_unbound_energy);
     RegisterCreatureAI(npc_westfall_overloaded_harvest_golem);
     RegisterSpellScript(spell_westfall_reaping_blows);
