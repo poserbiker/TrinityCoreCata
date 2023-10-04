@@ -1715,6 +1715,7 @@ enum TrainingDummy
     NPC_ADVANCED_TARGET_DUMMY                  = 2674,
     NPC_TARGET_DUMMY                           = 2673,
     NPC_SPELL_PRACTICE_CREDIT                  = 44175,
+	NPC_SPELL_PRACTICE_CREDIT1                 = 44420,
     SPELL_CHARGE                               = 100,
     SPELL_JUDGEMENT                            = 20271,
     SPELL_STEADY_SHOT                          = 56641,
@@ -1757,6 +1758,7 @@ struct npc_training_dummy : NullCreatureAI
             case SPELL_ARCANE_MISSILES: // Arcane Missiles - Mage
                 if (caster->GetTypeId() == TYPEID_PLAYER)
                     caster->ToPlayer()->KilledMonsterCredit(NPC_SPELL_PRACTICE_CREDIT);
+					caster->ToPlayer()->KilledMonsterCredit(NPC_SPELL_PRACTICE_CREDIT1);
                 break;
             default:
                 break;
