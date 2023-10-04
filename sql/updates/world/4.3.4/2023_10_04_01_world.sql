@@ -1,0 +1,1 @@
+UPDATE `creature_template` SET `ScriptName` = 'npc_shadowy_figure' WHERE `entry` = '42515';
